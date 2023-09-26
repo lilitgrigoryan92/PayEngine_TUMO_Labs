@@ -2,6 +2,7 @@ const express = require('express');
 const axios = require('axios');
 const dotenv = require('dotenv');
 const { Pool } = require('pg');
+const crypto = require('crypto')
 
 dotenv.config();
 
@@ -18,6 +19,9 @@ const pool = new Pool({
 
 app.use(express.json());
 
+const privateKey = process.env.PAYENGINE_PRIVATE_KEY;
+const keyObject = crypto.createPrivateKey(privateKey);
+const publicKey = keyObject.export({ type: 'spki', format: 'pem' });
 
 app.post('/api/onboard', async (req, res) => {
   try {
@@ -31,7 +35,7 @@ app.post('/api/onboard', async (req, res) => {
       },
       {
         headers: {
-          Authorization: `Bearer ${process.env.PAYENGINE_API_KEY}`,
+          Authorization: `Bearer ${publicKey}`
         },
       }
     );
@@ -54,4 +58,4 @@ app.post('/api/onboard', async (req, res) => {
 
 app.listen(port, () => {
     console.log(`Server is running on  ${port}`);
-  });
+});
